@@ -12,6 +12,8 @@ extern vec3D muls_vec3D(vec3D a, float b);
 extern vec4D adds_vec4D(vec4D a, float b);
 extern vec4D add_vec4D(vec4D a, vec4D b);
 extern vec4D muls_vec4D(vec4D a, float b);
+extern rgba_t muls_rgb(rgba_t, float);
+extern rgba_t add_rgb(rgba_t, rgba_t);
 
 // returns 1 if it interesects a polygon and initializes
 // t, intersect, normal, and object.
@@ -99,8 +101,8 @@ char shoot_ray( vec3D O,
     }
   }
   if (!has_intersect) return has_intersect;
+  float lum = (dot_product((vec3D){0.0,0.0, -1.0}, *normal) + 1.0)/2.0;
   if (object->geometry_type == GEOMETRY_NPRIMITIVE){
-      //float lum = (dot_product(light, normal) + 1.0)/2.0;
       uint8_t r = 0, g = 0, b = 0;
       if ((int)fabs(intersect->x) & 1 && (int)intersect->z % 2 ||
   	(!((int)intersect->x % 2) && !((int)intersect->z % 2))){
@@ -116,8 +118,6 @@ char shoot_ray( vec3D O,
   } else if (object->geometry_type == GEOMETRY_SPHERE){
       //vec3D I = normalize(muls_vec3D(add_vec3D(*intersect, muls_vec3D(O, -1.0)), -1.0));
       vec3D I = *intersect;
-      vec3D B = muls_vec3D(*normal, dot_product(*normal, I));
-      vec3D A = add_vec3D(I, muls_vec3D(*normal, -dot_product(*normal, I)));
       vec3D R = add_vec3D(I, muls_vec3D(*normal, -2.0*dot_product(*normal, I)));
       vec3D PO = add_vec3D(add_vec3D(R, O), *intersect);
       /* rgba values */
@@ -130,11 +130,17 @@ char shoot_ray( vec3D O,
       /* surface normal (normalize) */
       triangle3D dface;
       object3D dobject;
+      *rgba = object->material.color;
       if (shoot_ray(*intersect, PO, &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, depth + 1))
-        *rgba = drgba;
+        *rgba = add_rgb(*rgba, muls_rgb(drgba, object->reflection_coef));
       else {
-        *rgba = scene.background;
+        *rgba = add_rgb(*rgba, muls_rgb(scene.background, object->reflection_coef));
+        //*rgba = scene.background;
       }
+      rgba->val[0] = (uint8_t)((float)rgba->val[0]*lum) ;
+      rgba->val[1] = (uint8_t)((float)rgba->val[1]*lum) ;
+      rgba->val[2] = (uint8_t)((float)rgba->val[2]*lum) ;
+      rgba->val[3] = 255;
       
      
   }

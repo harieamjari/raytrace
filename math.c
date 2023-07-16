@@ -29,6 +29,36 @@ vec3D normalize(vec3D v){
   return (vec3D){v.x/mag, v.y/mag, v.z/mag};
 }
 
+rgba_t add_rgb(rgba_t a, rgba_t v){
+  float r = (float)a.val[0] + (float)v.val[0];
+  float g = (float)a.val[1] + (float)v.val[1];
+  float b = (float)a.val[2] + (float)v.val[2];
+  return (rgba_t){
+    .val[0] = (uint8_t)(r > 255.0 ? 255.0 : r ),
+    .val[1] = (uint8_t)(g > 255.0 ? 255.0 : g ),
+    .val[2] = (uint8_t)(b > 255.0 ? 255.0 : b ),
+  };
+}
+
+rgba_t muls_rgb(rgba_t a, float v){
+  float r = (float)a.val[0] * v;
+  float g = (float)a.val[1] * v;
+  float b = (float)a.val[2] * v;
+  return (rgba_t){
+    .val[0] = (uint8_t)(r > 255.0 ? 255.0 : r ),
+    .val[1] = (uint8_t)(g > 255.0 ? 255.0 : g ),
+    .val[2] = (uint8_t)(b > 255.0 ? 255.0 : b ),
+  };
+}
+
+rgba_t muls_rgba(rgba_t a, float b){
+  return (rgba_t){
+    .val[0] = (uint8_t)((float)a.val[0] * b),
+    .val[1] = (uint8_t)((float)a.val[1] * b),
+    .val[2] = (uint8_t)((float)a.val[2] * b),
+    .val[3] = (uint8_t)((float)a.val[3] * b),
+  };
+}
 float dot_product(vec3D a, vec3D b){
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }

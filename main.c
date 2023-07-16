@@ -36,10 +36,13 @@ int main(int argc, char *argv[]){
       .nb_faces = 1,
       .faces = &triangle
     },
-{
+    {
       .geometry_type = GEOMETRY_SPHERE,
       .sphere_center = (vec3D){0.0, 3.0, 20.0},
-      .sphere_r = 4.0
+      .sphere_r = 4.0,
+      .reflection_coef = 0.5,
+      .material.material_type = MATERIAL_RGB,
+      .material.color = (rgba_t){190,180,240}
     }
   };
 

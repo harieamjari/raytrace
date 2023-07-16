@@ -5,7 +5,10 @@
 typedef struct rgba_t rgba_t;
 struct rgba_t {
   // RGBA
-  uint8_t val[4];
+  union {
+    uint8_t val[4];
+    struct {uint8_t r, g, b, a;};
+  };
 };
 
 typedef struct vec3D vec3D;
@@ -30,6 +33,7 @@ struct triangle3D {
 
 enum material_t {
   MATERIAL_CHECKER_BOARD,
+  MATERIAL_RGB,
   MATERIAL_IMG
 };
 typedef enum material_t material_t;
@@ -38,9 +42,8 @@ typedef struct material3D material3D;
 struct material3D {
   material_t material_type;
   union {
-    struct {
-      char **a;
-    };
+    rgba_t color;
+    char **img;
   };
 };
 
@@ -73,6 +76,8 @@ struct object3D {
   // faces[10].vertices[2]
 
   material3D material;
+  float reflection_coef;
+
   float b, s, d, f;
 };
 
