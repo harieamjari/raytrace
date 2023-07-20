@@ -21,7 +21,7 @@ extern float dot_product(vec3D, vec3D);
 extern scene3D scene;
 
 rgba_t get_pixel(int x, int y){
-  vec3D O =  (vec3D){0.0, 2.0, 0.0};
+  vec3D O =  (vec3D){0.0, 2.0, 5.0};
   vec3D P = (vec3D){(float)x, (float)y, 400.0};
 
 //  vec3D light = (vec3D){0.0, 0.0, -1.0};

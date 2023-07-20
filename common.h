@@ -103,6 +103,7 @@ struct light3D {
       float sphere_r;
     };
   };
+  float light_intensity;
 };
 
 
