@@ -5,10 +5,11 @@
 typedef struct rgba_t rgba_t;
 struct rgba_t {
   // RGBA
-  union {
-    uint8_t val[4];
-    struct {uint8_t r, g, b, a;};
-  };
+  float r, g, b, a;
+//  union {
+//    uint8_t val[4];
+//    struct {uint8_t r, g, b, a;};
+//  };
 };
 
 typedef struct vec3D vec3D;
@@ -59,7 +60,8 @@ struct object3D {
   union {
    // GEOMETRY_NPRIMITIVE
     struct {
-      // some objects reuses same vertex
+      // some objects reuses same vertex for the same
+      // triangle
       int nb_vertices;
       // vertex lists 
       vec3D *vertices;
@@ -81,11 +83,35 @@ struct object3D {
   float b, s, d, f;
 };
 
+typedef struct light3D light3D;
+struct light3D {
+  geometry_t geometry_type;  
+  union {
+   // GEOMETRY_NPRIMITIVE
+    struct {
+      // some lights reuses same vertex
+      int nb_vertices;
+      // vertex lists 
+      vec3D *vertices;
+    
+      int nb_faces;
+      triangle3D *faces;
+    };
+   // GEOMETRY_SPHERE
+    struct {
+      vec3D sphere_center;
+      float sphere_r;
+    };
+  };
+};
+
 
 typedef struct scene3D scene3D;
 struct scene3D {
   int nb_objects;
   object3D *objects;
+  int nb_lights;
+  light3D *lights;
   rgba_t background;
 };
 

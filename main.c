@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include "common.h"
 
 extern rgba_t get_pixel(int, int);
@@ -15,46 +17,67 @@ int main(int argc, char *argv[]){
     image_width = 640; 
     image_height = 480; 
   }
+  srand(time(NULL));
+  vec3D roomv[6] = {
+    (vec3D){0.0, 0.9, -50.0},
+    (vec3D){200.0, 1.0, 100.0},
+    (vec3D){-200.0, 1.0, 100.0},
 
-  vec3D vertices[3] = {
-    (vec3D){0.0, -0.5, -50.0},
-    (vec3D){200.0, 0.0, 100.0},
-    (vec3D){-200.0, 0.0, 100.0}
+    (vec3D){0.0, 25.0, 30.0},
+    (vec3D){25.0, -1.0, 35.0},
+    (vec3D){-25.0, -1.0, 35.0},
   };
 
-  triangle3D triangle = {
-    .vertices[0] = vertices + 0,
-    .vertices[1] = vertices + 1,
-    .vertices[2] = vertices + 2
-  };
-
-  object3D object[2] = {
+  triangle3D roomf[2] = {
     {
-      .geometry_type = GEOMETRY_NPRIMITIVE,
-      .nb_vertices = 3,
-      .vertices = vertices,
-      .nb_faces = 1,
-      .faces = &triangle
+      .vertices[0] = roomv + 0,
+      .vertices[1] = roomv + 1,
+      .vertices[2] = roomv + 2
     },
     {
-      .geometry_type = GEOMETRY_SPHERE,
-      .sphere_center = (vec3D){0.0, 3.0, 20.0},
-      .sphere_r = 4.0,
-      .reflection_coef = 0.5,
-      .material.material_type = MATERIAL_RGB,
-      .material.color = (rgba_t){190,180,240}
+      .vertices[0] = roomv + 3,
+      .vertices[1] = roomv + 4,
+      .vertices[2] = roomv + 5
     }
   };
 
-  scene = (scene3D){2, object, (rgba_t){0, 126, 127, 255}};
+  object3D objects[2] = {
+    {
+      .geometry_type = GEOMETRY_NPRIMITIVE,
+      .nb_vertices = 6,
+      .vertices = roomv,
+      .nb_faces = 2,
+      .faces = roomf,
+      .material.material_type = MATERIAL_CHECKER_BOARD,
+      .material.color = (rgba_t){1.0, 1.0, 1.0, 1.0}
+    },
+    {
+      .geometry_type = GEOMETRY_SPHERE,
+      .sphere_center = (vec3D){0.0, 3.0, 25.0},
+      .sphere_r = 3.0,
+      .reflection_coef = 0.5,
+      .material.material_type = MATERIAL_RGB,
+      .material.color = (rgba_t){0.82,0.72,0.86, 1.0}
+    }
+  };
+
+  light3D lights[1] = {
+    {
+      .geometry_type = GEOMETRY_SPHERE,
+      .sphere_center = (vec3D){0.0, 10.0, 30.0},
+      .sphere_r = 0.5,
+    }
+  };
+
+  scene = (scene3D){2, objects, 1, lights, (rgba_t){0, 0.51, 0.45, 1.0}};
 
   for (int y = 0; y < image_height; y++)
     for (int x = 0; x < image_width; x++){
       rgba_t rgba = get_pixel(x - (image_width/2), (image_height/2) - y);
-      putchar(rgba.val[0]);
-      putchar(rgba.val[1]);
-      putchar(rgba.val[2]);
-      putchar(rgba.val[3]);
+      putchar((uint8_t)(rgba.r * 255.0));
+      putchar((uint8_t)(rgba.g * 255.0));
+      putchar((uint8_t)(rgba.b * 255.0));
+      putchar((uint8_t)(rgba.a * 255.0));
     }
 
   return 0;
