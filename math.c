@@ -8,6 +8,10 @@ vec3D add_vec3D(vec3D a, vec3D b){
   return (vec3D){a.x + b.x, a.y + b.y, a.z + b.z};
 }
 
+vec3D adds_vec3D(vec3D a, float b){
+  return (vec3D){a.x + b, a.y + b, a.z + b};
+}
+
 vec3D sub_vec3D(vec3D a, vec3D b){
   return (vec3D){a.x - b.x, a.y - b.y, a.z - b.z};
 }

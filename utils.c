@@ -13,6 +13,7 @@ extern float dot_product(vec3D, vec3D);
 extern float magnitude(vec3D);
 
 extern vec3D add_vec3D(vec3D a, vec3D b);
+extern vec3D adds_vec3D(vec3D a, float b);
 extern vec3D sub_vec3D(vec3D a, vec3D b);
 extern vec3D muls_vec3D(vec3D a, float b);
 
@@ -43,9 +44,9 @@ uint8_t u8_getb(rgba_t rgba){
 // generate monte carlo ray 
 vec3D montc_ray(vec3D norm){
   vec3D randv = normalize((vec3D){
-    (float)(500 - rand()%1000),
-    (float)(500 - rand()%1000),
-    (float)(500 - rand()%1000)
+    (float)(1000 - rand()%2000),
+    (float)(1000 - rand()%2000),
+    (float)(1000 - rand()%2000)
   });
 
   if (dot_product(randv, norm) <= 0.0)
@@ -87,9 +88,9 @@ char shoot_ray( vec3D O,
 //        vec3D B = *(facei.vertices[1]);
 //        vec3D C = *(facei.vertices[2]);
         matrix3x4 matrix = (matrix3x4){
-          (vec4D){A.x - C.x, B.x - C.x, -(P.x - O.x), O.x - C.x},
-          (vec4D){A.y - C.y, B.y - C.y, -(P.y - O.y), O.y - C.y},
-          (vec4D){A.z - C.z, B.z - C.z, -(P.z - O.z), O.z - C.z},
+          (vec4D){A.x - C.x, B.x - C.x, -(P.x - O.x),  -C.x},
+          (vec4D){A.y - C.y, B.y - C.y, -(P.y - O.y),  -C.y},
+          (vec4D){A.z - C.z, B.z - C.z, -(P.z - O.z),  -C.z},
         };
   
         vec3D v = {0.0, 0.0, 0.0};
@@ -100,14 +101,15 @@ char shoot_ray( vec3D O,
         if (v.x < 0.0 || v.y < 0.0 || v.z < 0.0 || v.x + v.y > 1.0)
           continue;
   
-      	vec3D temp_intersect = add_vec3D(add_vec3D(add_vec3D(muls_vec3D(A, v.x), muls_vec3D(B, v.y)), muls_vec3D(C, 1.0-(v.x + v.y))), O /*(vec3D){0.0,0.0,0.0}*/);
+      	//vec3D temp_intersect = add_vec3D(add_vec3D(muls_vec3D(A, v.x), muls_vec3D(B, v.y)), muls_vec3D(C, 1.0-(v.x + v.y)));
+      	vec3D temp_intersect = muls_vec3D(sub_vec3D(P, O), v.z);
 	float d = magnitude(temp_intersect);
 	//fprintf(stderr, "tr %f\n", d);
         if (*t > d){
       	has_intersect = 1;
         *t = d;
       	//*intersect = add_vec3D(add_vec3D(muls_vec3D(A, v.x), muls_vec3D(B, v.y)), muls_vec3D(C, 1.0-(v.x + v.y)));
-      	*intersect = temp_intersect; 
+      	*intersect = add_vec3D(temp_intersect, O); 
       	*face = facei;
         *object = objecti;
         *normal = compute_snormal(facei);
@@ -141,8 +143,12 @@ char shoot_ray( vec3D O,
 	//solve for t1c
 	float t1c = sqrtf( radius2 - d2 );
 
-	//solve for intersection points
-	float t1 = tc - t1c;
+	//solve for intersection points  
+	float t1;
+	if (t1c < tc)
+	t1 = tc - t1c;
+	else 
+	t1 = tc + t1c;
 	if ( *t > t1 ) {
       	has_intersect = 1;
         *t = t1;
@@ -206,6 +212,7 @@ char shoot_ray( vec3D O,
 
 	//solve for intersection points
 	float t1 = tc - t1c;
+	if (t1c > tc) continue;
 	if ( *t > t1 ) {
       	has_intersect = 2;
         *t = t1;
@@ -272,9 +279,9 @@ char shoot_ray( vec3D O,
   }
 
 
-  if (object->geometry_type == GEOMETRY_NPRIMITIVE){
+  if (1/*object->geometry_type == GEOMETRY_NPRIMITIVE*/){
     //vec3d rl = sub_vec3d(sub_vec3d(scene.lights[0].sphere_center, o), sub_vec3d(*intersect, o));
-    vec3D rl = sub_vec3D(scene.lights[0].sphere_center, *intersect);
+    vec3D rl = sub_vec3D(adds_vec3D(scene.lights[0].sphere_center, 0.2), *intersect);
  //   vec3D rlo = sub_vec3D(*intersect, scene.lights[0].sphere_center);
     float dl = magnitude(rl);
     vec3D nrl = normalize(rl);
@@ -293,20 +300,33 @@ char shoot_ray( vec3D O,
     rgba_t total_illum;
     char sret;
     //*rgba = object->material.color;
-    sret = shoot_ray(*intersect, /*add_vec3D(*intersect, nrl)*/scene.lights[0].sphere_center, &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, depth + 1);
+    sret = shoot_ray(add_vec3D(*intersect, muls_vec3D(nrl, 0.1)),scene.lights[0].sphere_center /*add_vec3D(*intersect, nrl)*/, &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, depth + 1);
     if (sret == 0 /*sret == 1 */) {
       total_illum = (rgba_t){0.0, 0.0, 0.0, 1.0};
+      float val = powf(M_E, -dl/scene.lights[0].light_intensity);
+      total_illum = (rgba_t){val, val, val, 1.0};
     //  fprintf(stderr, "no such light\n");
     } else if (sret == 1){
       total_illum = (rgba_t){0.0, 0.0, 0.0, 1.0};
+      if (dobject.geometry_type == GEOMETRY_SPHERE);
+  //      fprintf(stderr, "GEOMETRY SPHERE\n");
+       else if (dobject.geometry_type == GEOMETRY_NPRIMITIVE){
+   //     fprintf(stderr, "GEOMETRY NPRIMITIVE\n");
+      float val = powf(M_E, -dl/scene.lights[0].light_intensity);
+    //  total_illum = (rgba_t){val, val, val, 1.0};
+
+       }
+//      float val = powf(M_E, -dl/scene.lights[0].light_intensity);
+//      total_illum = (rgba_t){val, val, val, 1.0};
     //  float val = powf(M_E, -dl/scene.lights[0].light_intensity);
     } else if (sret == 2){
+  //    fprintf(stderr, "GEOMETRY LIGHT\n");
       float val = powf(M_E, -dl/scene.lights[0].light_intensity);
       total_illum = (rgba_t){val, val, val, 1.0};
     }
-    for (int i = 0; i < 50; i++){
+    for (int i = 0; i < 10; i++){
       vec3D randp = montc_ray(dnormal);
-      if (shoot_ray(*intersect, add_vec3D(*intersect, randp), &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, depth + 4) == 1){
+      if (shoot_ray( add_vec3D(*intersect, muls_vec3D(randp, 0.1)), add_vec3D(*intersect, randp), &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, depth + 4) == 1){
         float val = powf(M_E, -dt/scene.lights[0].light_intensity);
         total_illum = add_rgb(total_illum, muls_rgb(drgba, val));
       }
@@ -346,7 +366,7 @@ char shoot_ray( vec3D O,
     object3D dobject;
     light3D dlight;
     rgba_t total_illum;
-    if (shoot_ray(*intersect, scene.lights[0].sphere_center, &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, depth + 4) != 2) {
+    if (shoot_ray(*intersect, scene.lights[0].sphere_center, &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, depth + 1) != 2) {
       total_illum.r = 0.0;
       total_illum.g = 0.0;
       total_illum.b = 0.0;
@@ -357,9 +377,9 @@ char shoot_ray( vec3D O,
       total_illum = (rgba_t){val, val, val, 1.0};
       rgba->a = 1.0;
     }
-    for (int i = 0; i < 50; i++){
+    for (int i = 0; i < 0; i++){
       vec3D randp = montc_ray(dnormal);
-      if (shoot_ray(*intersect, add_vec3D(*intersect, randp), &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, depth + 4) == 1){
+      if (shoot_ray(*intersect, add_vec3D(*intersect, randp), &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, depth + 3) == 1){
         float val = powf(M_E, -dt/scene.lights[0].light_intensity);
         total_illum = add_rgb(total_illum, muls_rgb(drgba, val));
       }

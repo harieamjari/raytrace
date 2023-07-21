@@ -27,9 +27,9 @@ int main(int argc, char *argv[]){
       img_buf[y] = malloc(sizeof(rgbai_t)*image_width);
   srand(time(NULL));
   vec3D roomv[6] = {
-    (vec3D){0.0, 0.9, -50.0},
-    (vec3D){200.0, 1.0, 100.0},
-    (vec3D){-200.0, 1.0, 100.0},
+    (vec3D){0.0, -0.9, -50.0},
+    (vec3D){200.0, -1.0, 100.0},
+    (vec3D){-200.0, -1.0, 100.0},
 
     (vec3D){0.0, 25.0, 30.0},
     (vec3D){25.0, -1.0, 35.0},
@@ -117,7 +117,7 @@ int main(int argc, char *argv[]){
       .nb_faces = 1,
       .faces = leftf,
       .material.material_type = MATERIAL_RGB,
-      .material.color = (rgba_t){1.0, 0.0, 0.0, 1.0}
+      .material.color = (rgba_t){1.0, 0.5, 0.5, 1.0}
     },
     {
       .geometry_type = GEOMETRY_NPRIMITIVE,
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]){
       .nb_faces = 1,
       .faces = rightf,
       .material.material_type = MATERIAL_RGB,
-      .material.color = (rgba_t){0.0, 0.0, 1.0, 1.0}
+      .material.color = (rgba_t){0.5, 0.5, 1.0, 1.0}
     },
     {
       .geometry_type = GEOMETRY_SPHERE,
@@ -141,9 +141,9 @@ int main(int argc, char *argv[]){
   light3D lights[1] = {
     {
       .geometry_type = GEOMETRY_SPHERE,
-      .sphere_center = (vec3D){-2.0, 9.0, 19.0},
+      .sphere_center = (vec3D){-4.0, 10.0, 23.0},
       .sphere_r = 0.5,
-      .light_intensity = 14.0,
+      .light_intensity = 6.0,
     }
   };
 
