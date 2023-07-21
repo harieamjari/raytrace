@@ -71,9 +71,10 @@ char shoot_ray( vec3D O,
 		object3D *object,
 		/* object of intersection */
 		light3D *light,
+		char occlusion_test,
 		int depth){
 
-  if (depth > 5) return 0;
+  if (depth > 2) return 0;
   *t = +INFINITY;
   vec3D D = sub_vec3D(P, O);
   char has_intersect = 0;
@@ -257,7 +258,7 @@ char shoot_ray( vec3D O,
     return 2;
   }
   // no intersection
-  if (has_intersect == 0) return 0;
+  if (has_intersect == 0 || occlusion_test) return 0;
   const float lum = (dot_product(normalize(sub_vec3D(scene.lights[0].sphere_center, *intersect)), *normal) + 1.0)/2.0;
 
   /* apply default color material */
@@ -281,11 +282,12 @@ char shoot_ray( vec3D O,
 
   if (1/*object->geometry_type == GEOMETRY_NPRIMITIVE*/){
     //vec3d rl = sub_vec3d(sub_vec3d(scene.lights[0].sphere_center, o), sub_vec3d(*intersect, o));
-    vec3D rl = sub_vec3D(adds_vec3D(scene.lights[0].sphere_center, 0.2), *intersect);
- //   vec3D rlo = sub_vec3D(*intersect, scene.lights[0].sphere_center);
+    vec3D rl = sub_vec3D(scene.lights[0].sphere_center, *intersect);
     float dl = magnitude(rl);
-    vec3D nrl = normalize(rl);
-    vec3D PO = add_vec3D(*intersect, nrl);
+    rgba_t di_total_illum = (rgba_t){0.0, 0.0, 0.0, 1.0};
+    rgba_t in_total_illum = (rgba_t){0.0, 0.0, 0.0, 1.0};
+ //   vec3D rlo = sub_vec3D(*intersect, scene.lights[0].sphere_center);
+    vec3D tnrl = normalize(rl);
     /* rgba values */
     rgba_t drgba;
     /* distance from the intersection */
@@ -297,42 +299,47 @@ char shoot_ray( vec3D O,
     triangle3D dface;
     object3D dobject;
     light3D dlight;
-    rgba_t total_illum;
-    char sret;
-    //*rgba = object->material.color;
-    sret = shoot_ray(add_vec3D(*intersect, muls_vec3D(nrl, 0.1)),scene.lights[0].sphere_center /*add_vec3D(*intersect, nrl)*/, &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, depth + 1);
-    if (sret == 0 /*sret == 1 */) {
-      total_illum = (rgba_t){0.0, 0.0, 0.0, 1.0};
-      float val = powf(M_E, -dl/scene.lights[0].light_intensity);
-      total_illum = (rgba_t){val, val, val, 1.0};
-    //  fprintf(stderr, "no such light\n");
-    } else if (sret == 1){
-      total_illum = (rgba_t){0.0, 0.0, 0.0, 1.0};
-      if (dobject.geometry_type == GEOMETRY_SPHERE);
-  //      fprintf(stderr, "GEOMETRY SPHERE\n");
-       else if (dobject.geometry_type == GEOMETRY_NPRIMITIVE){
-   //     fprintf(stderr, "GEOMETRY NPRIMITIVE\n");
-      float val = powf(M_E, -dl/scene.lights[0].light_intensity);
-    //  total_illum = (rgba_t){val, val, val, 1.0};
 
-       }
-//      float val = powf(M_E, -dl/scene.lights[0].light_intensity);
-//      total_illum = (rgba_t){val, val, val, 1.0};
-    //  float val = powf(M_E, -dl/scene.lights[0].light_intensity);
-    } else if (sret == 2){
-  //    fprintf(stderr, "GEOMETRY LIGHT\n");
-      float val = powf(M_E, -dl/scene.lights[0].light_intensity);
-      total_illum = (rgba_t){val, val, val, 1.0};
-    }
-    for (int i = 0; i < 10; i++){
-      vec3D randp = montc_ray(dnormal);
-      if (shoot_ray( add_vec3D(*intersect, muls_vec3D(randp, 0.1)), add_vec3D(*intersect, randp), &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, depth + 4) == 1){
+#define SFSAMPLE 10
+    for (int i = 0; i < SFSAMPLE; i++) {
+      vec3D nrl = muls_vec3D(montc_ray(tnrl), scene.lights[0].sphere_r - 0.1);
+  
+  
+      //*rgba = object->material.color;
+      char sret = shoot_ray(add_vec3D(*intersect, muls_vec3D(nrl, 0.1)), add_vec3D(scene.lights[0].sphere_center, nrl) /*add_vec3D(*intersect, nrl)*/, &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, 1, depth + 1);
+      if (sret == 0 /*sret == 1 */) {
+      //  fprintf(stderr, "no such light\n");
+      } else if (sret == 1){
+      } else if (sret == 2){
+    //    fprintf(stderr, "GEOMETRY LIGHT\n");
         float val = powf(M_E, -dt/scene.lights[0].light_intensity);
-        total_illum = add_rgb(total_illum, muls_rgb(drgba, val));
+        //total_illum = add_rgb(total_illum, (rgba_t){val, val, val, 1.0});
+        di_total_illum = (rgba_t){
+          val + di_total_illum.r,
+          val + di_total_illum.g,
+          val + di_total_illum.b, 1.0};
       }
-
     }
-    *rgba = mul_rgb(*rgba, total_illum);
+    di_total_illum = muls_rgb(di_total_illum, 1.0/(float)SFSAMPLE);
+#undef SFSAMPLE
+    for (int i = 0; i < 20; i++){
+      vec3D randp = muls_vec3D(montc_ray(dnormal), 2.0);
+      if (shoot_ray( add_vec3D(*intersect, muls_vec3D(randp, 0.01)), add_vec3D(*intersect, randp), &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, 0, depth + 1) == 1){
+        float val = powf(M_E, -dt/scene.lights[0].light_intensity);
+        //total_illum = add_rgb(total_illum, muls_rgb(drgba, val));
+        in_total_illum = (rgba_t){
+          val*drgba.r + in_total_illum.r,
+          val*drgba.g + in_total_illum.g,
+          val*drgba.b + in_total_illum.b, 1.0};
+      }
+    }
+    in_total_illum = muls_rgb(in_total_illum, 1.0);
+
+    //}
+    *rgba = mul_rgb(*rgba, muls_rgb((rgba_t) {
+      di_total_illum.r + in_total_illum.r,
+      di_total_illum.g + in_total_illum.g,
+      di_total_illum.b + in_total_illum.b, 1.0}, 1.0));
     rgba->a = 1.0;
 
     // is occluded by lights
@@ -366,7 +373,7 @@ char shoot_ray( vec3D O,
     object3D dobject;
     light3D dlight;
     rgba_t total_illum;
-    if (shoot_ray(*intersect, scene.lights[0].sphere_center, &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, depth + 1) != 2) {
+    if (shoot_ray(*intersect, scene.lights[0].sphere_center, &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, 0, depth + 1) != 2) {
       total_illum.r = 0.0;
       total_illum.g = 0.0;
       total_illum.b = 0.0;
@@ -379,7 +386,7 @@ char shoot_ray( vec3D O,
     }
     for (int i = 0; i < 0; i++){
       vec3D randp = montc_ray(dnormal);
-      if (shoot_ray(*intersect, add_vec3D(*intersect, randp), &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, depth + 3) == 1){
+      if (shoot_ray(*intersect, add_vec3D(*intersect, randp), &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, 0, depth + 3) == 1){
         float val = powf(M_E, -dt/scene.lights[0].light_intensity);
         total_illum = add_rgb(total_illum, muls_rgb(drgba, val));
       }

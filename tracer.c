@@ -16,6 +16,7 @@ extern char shoot_ray(
 		/* object of intersection */
 		object3D *object,
                 light3D *light,
+		char occlusion_test,
 		int depth);
 extern float dot_product(vec3D, vec3D);
 extern scene3D scene;
@@ -34,7 +35,7 @@ rgba_t get_pixel(int x, int y){
   light3D light;
   rgba_t rgba;
 
-  if (shoot_ray(O, P, &rgba, &t, &intersect, &normal, &face, &object, &light, 0)){
+  if (shoot_ray(O, P, &rgba, &t, &intersect, &normal, &face, &object, &light, 0, 0)){
     float r = 0; 
     float g = 0;
     float b = 0;

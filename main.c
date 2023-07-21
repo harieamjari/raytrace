@@ -141,9 +141,9 @@ int main(int argc, char *argv[]){
   light3D lights[1] = {
     {
       .geometry_type = GEOMETRY_SPHERE,
-      .sphere_center = (vec3D){-4.0, 10.0, 23.0},
+      .sphere_center = (vec3D){-2.0, 10.0, 23.0},
       .sphere_r = 0.5,
-      .light_intensity = 6.0,
+      .light_intensity = 8.0,
     }
   };
 
