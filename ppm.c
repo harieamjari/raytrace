@@ -1,8 +1,7 @@
+/* writes a ppm format */
 #include <stdio.h>
-#include <sys/resource.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <time.h>
 #include "common.h"
 
 typedef struct rgbai_t rgbai_t;	
@@ -24,17 +23,6 @@ int main(int argc, char *argv[]){
     image_width = 640; 
     image_height = 480; 
   }
-  int rand_buf_len = 2000;
-  FILE *frand = fopen("/dev/random", "rb");
-  int *rand_buf;
-  rand_buf = malloc(sizeof(int)*rand_buf_len);
-  assert(rand_buf != NULL && frand != NULL);
-  assert(fread(rand_buf, sizeof(int), rand_buf_len, frand) == rand_buf_len);
-  fclose(frand);
-  for (int i = 0; i < rand_buf_len; i++){
-    rand_buf[i] = abs(rand_buf[i]);
-  }
-
   rgbai_t **img_buf = malloc(sizeof(rgbai_t *)*image_height);
   assert(img_buf != NULL);
   for (int y = 0; y < image_height; y++)
@@ -161,15 +149,14 @@ int main(int argc, char *argv[]){
       .light_color = (rgba_t){
         (float)0xfd/255.0,
         (float)0xfb/255.0,
-        (float)0xd3/255.0,
-	1.0
+        (float)0xd3/255.0
       },
     }
   };
 
   scene = (scene3D){5, objects, 1, lights, (rgba_t){0, 0.51, 0.45, 1.0}};
-  uint64_t rng = 42;
 
+  uint64_t rng = 42;	
 #pragma omp parallel for
   for (int y = 0; y < image_height; y++)
     for (int x = 0; x < image_width; x++){
@@ -180,13 +167,13 @@ int main(int argc, char *argv[]){
       img_buf[y][x].a = (uint8_t)(rgba.a*255.0);
     }
 
-
+  printf("P6\n%d %d\n255\n", image_width, image_height);
+ 
   for (int y = 0; y < image_height; y++)
     for (int x = 0; x < image_width; x++){
       putchar(img_buf[y][x].r);
       putchar(img_buf[y][x].g);
       putchar(img_buf[y][x].b);
-      putchar(img_buf[y][x].a);
 
     }
   for (int y = 0; y < image_height; y++)

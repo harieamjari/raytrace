@@ -1,15 +1,14 @@
 #ifndef HARI_COMMON_H
 #define HARI_COMMON_H
 #include <stdint.h>
+typedef struct rand_data rand_data;
+struct rand_data {
+  int *seed, *rand_buf, rand_buf_len;
+};
 
 typedef struct rgba_t rgba_t;
 struct rgba_t {
-  // RGBA
   float r, g, b, a;
-//  union {
-//    uint8_t val[4];
-//    struct {uint8_t r, g, b, a;};
-//  };
 };
 
 typedef struct vec3D vec3D;
@@ -60,8 +59,7 @@ struct object3D {
   union {
    // GEOMETRY_NPRIMITIVE
     struct {
-      // some objects reuses same vertex for the same
-      // triangle
+      // some triangles reuses same vertex in another triangle.
       int nb_vertices;
       // vertex lists 
       vec3D *vertices;
@@ -104,6 +102,7 @@ struct light3D {
     };
   };
   float light_intensity;
+  rgba_t light_color;
 };
 
 
@@ -113,7 +112,7 @@ struct scene3D {
   object3D *objects;
   int nb_lights;
   light3D *lights;
-  rgba_t background;
+  rgba_t background_color;
 };
 
 #endif

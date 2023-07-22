@@ -45,6 +45,7 @@ rgba_t add_rgb(rgba_t a, rgba_t v){
     .r = (r > 1.0 ? 1.0 : r ),
     .g = (g > 1.0 ? 1.0 : g ),
     .b = (b > 1.0 ? 1.0 : b ),
+    .a = a.a
   };
 }
 
@@ -91,10 +92,10 @@ float magnitude(vec3D v){
   return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
-vec3D compute_snormal(triangle3D *triangle){
-  vec3D A = *triangle->vertices[0];
-  vec3D B = *triangle->vertices[1];
-  vec3D C = *triangle->vertices[2];
+vec3D compute_snormal(triangle3D triangle){
+  vec3D A = *triangle.vertices[0];
+  vec3D B = *triangle.vertices[1];
+  vec3D C = *triangle.vertices[2];
 
   vec3D v1 = add_vec3D(A, muls_vec3D(C, -1.0));
   vec3D v2 = add_vec3D(B, muls_vec3D(C, -1.0));
@@ -107,9 +108,35 @@ vec3D compute_snormal(triangle3D *triangle){
 }
 
 
-// returns 1 if unsolvable
+// returns 1 if unsolvable.
 #pragma STDC FENV_ACCESS ON
 char solve_matrix(matrix3x4 matrix, vec3D *v){
+  /* to put it simply, it turns a matrix:
+   *
+   *   matrix3x4 matrix = (matrix3x4){
+   *     (vec4D){-3.0, 4.0, 8.0, 7.0},
+   *     (vec4D){2.0, -3.0, 5.0, -4.0},
+   *     (vec4D){1.0, 8.0, -3.0, 3.0 }
+   *   };
+   *
+   * into its row echelon form:
+   *
+   *   matrix3x4 matrix = (matrix3x4){
+   *     (vec4D){1.0, 0.0, 0.0, -1.346020},
+   *     (vec4D){0.0, 1.0, 0.0, 0.574395},
+   *     (vec4D){0.0, 0.0, 1.0, 0.083045}
+   *   };
+   *
+   * and then assigns:
+   *
+   *   v->x = matrix.row[0].w;
+   *   v->y = matrix.row[1].w;
+   *   v->z = matrix.row[2].w;
+   */
+
+
+
+
   feclearexcept(FE_ALL_EXCEPT);
 #define FAST_GAUSSIAN
 #ifndef FAST_GAUSSIAN
