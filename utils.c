@@ -1,5 +1,5 @@
 /* utils.c - utilities for raytracing */
-/* Copyright (c) 2023 Al-buharie Amjari and others*/
+/* Copyright (c) 2023 Al-buharie Amjari and others */
 /* Release under MIT */
 
 #include <stdlib.h>
@@ -295,7 +295,7 @@ char shoot_ray( vec3D O,
     }
     di_total_illum = muls_rgb(di_total_illum, 1.0/(float)SFSAMPLE);
 #undef SFSAMPLE
-    for (int i = 0; i < 5; i++){
+    for (int i = 0; i < 20; i++){
       vec3D randp = muls_vec3D(montc_ray(dnormal, rng), 2.0);
       if (shoot_ray( add_vec3D(*intersect, muls_vec3D(randp, 0.01)), add_vec3D(*intersect, randp), &drgba, &dt, &dintersect, &dnormal, &dface, &dobject, &dlight, 0, rng, depth + 1) == 1){
         float val = powf(M_E, -dt/scene.lights[0].light_intensity);
