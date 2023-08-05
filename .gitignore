@@ -1,4 +1,6 @@
 *.o
 *.out
+*.png
+*.ppm
 main
 ppm

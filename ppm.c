@@ -1,4 +1,5 @@
 /* writes a ppm format */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -44,19 +45,28 @@ int main(int argc, char *argv[]){
     }
   }
 
-  printf("P6\n%d %d\n255\n", image_width, image_height);
+ /* Windows terminal doesn't support piping binaries which causes corrupted
+  * image to appear (atleast that's the behaviour on my machine), or if
+  * it's supported, I don't want to add additional codes to fix problems
+  * they have in their terminals when piping binaries.
+  */
+#ifdef _WIN32
+  FILE *fpout = fopen("ray.ppm", "wb");
+#else
+  FILE *fpout = stdout;
+#endif
+  fprintf(fpout, "P6\n%d %d\n255\n", image_width, image_height);
  
-  for (int y = 0; y < image_height; y++)
+  for (int y = 0; y < image_height; y++){
     for (int x = 0; x < image_width; x++){
-      putchar(img_buf[y][x].r);
-      putchar(img_buf[y][x].g);
-      putchar(img_buf[y][x].b);
-
+      fputc(img_buf[y][x].r, fpout);
+      fputc(img_buf[y][x].g, fpout);
+      fputc(img_buf[y][x].b, fpout);
     }
-  for (int y = 0; y < image_height; y++)
-      free(img_buf[y]);
+    free(img_buf[y]);
+  }
 
   free(img_buf);
-
+  fclose(fpout);
   return 0;
 }

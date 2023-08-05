@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <sys/resource.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
@@ -35,7 +34,7 @@ int main(int argc, char *argv[]){
 
 #pragma omp parallel for
   for (int y = 0; y < image_height; y++){
-    uint64_t rng = y;
+    uint64_t rng = y + 1;
     for (int x = 0; x < image_width; x++){
       rgba_t rgba = get_pixel(x - (image_width/2), (image_height/2) - y, &rng);
       img_buf[y][x].r = (uint8_t)(rgba.r*255.0);

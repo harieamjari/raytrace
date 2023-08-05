@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdio.h>
 #include "common.h"
 #include "utils.h"
 extern scene3D scene;
@@ -16,16 +17,16 @@ rgba_t get_pixel(int x, int y, uint64_t *rng){
   object3D object;
   light3D light;
   rgba_t rgba;
-  float light_atten_coef = 5.0;
+  float light_atten_coef = 1.0;
   float val = powf(M_E, -t*light_atten_coef);
 
   char sret = shoot_ray(O, P, &rgba, &t, &intersect, &normal, &face, &object, &light, 0, rng, 0);
+  rgba_t color = rgba;
   if (sret == 1 || sret == 0){
-    rgba_t color = rgba;
     return (rgba_t) {
-      color.r * val,
-      color.g * val,
-      color.b * val,
+      color.r,
+      color.g,
+      color.b,
       1.0,
     };
 

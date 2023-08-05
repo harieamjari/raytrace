@@ -69,9 +69,12 @@ rgba_t mul_rgb(rgba_t a, rgba_t v){
   float g = a.g * v.g;
   float b = a.b * v.b;
   return (rgba_t){
-    .r = (r > 1.0 ? 1.0 : r ),
-    .g = (g > 1.0 ? 1.0 : g ),
-    .b = (b > 1.0 ? 1.0 : b ),
+//    .r = (r > 1.0 ? 1.0 : r ),
+//    .g = (g > 1.0 ? 1.0 : g ),
+//    .b = (b > 1.0 ? 1.0 : b ),
+    .r = (r),
+    .g = (g),
+    .b = (b),
     .a = a.a,
   };
 }
